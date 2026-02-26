@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY entrypoint.sh /app/entrypoint.sh
+COPY prepare.js /app/prepare.js
 RUN chmod +x /app/entrypoint.sh
 
 # Route OpenClaw and Node runtime files into /app/files.

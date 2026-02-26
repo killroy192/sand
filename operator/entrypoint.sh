@@ -41,46 +41,6 @@ if [ ! -f "${CONFIG_FILE}" ]; then
   fi
 fi
 
-node <<'EOF'
-const fs = require("node:fs");
-
-const configFile = process.env.OPENCLAW_CONFIG_PATH || "/app/files/state/openclaw.json";
-const bind = (process.env.OPENCLAW_GATEWAY_BIND || "lan").trim();
-
-if (!fs.existsSync(configFile)) {
-  process.exit(0);
-}
-
-const raw = fs.readFileSync(configFile, "utf8");
-const cfg = JSON.parse(raw);
-cfg.gateway = cfg.gateway || {};
-
-const forcedToken = (process.env.OPENCLAW_GATEWAY_TOKEN || "").trim();
-if (forcedToken) {
-  cfg.gateway.auth = cfg.gateway.auth || {};
-  cfg.gateway.auth.mode = "token";
-  cfg.gateway.auth.token = forcedToken;
-}
-
-if (bind !== "loopback") {
-  cfg.gateway.controlUi = cfg.gateway.controlUi || {};
-
-  const fallback = (process.env.OPENCLAW_CONTROL_UI_ALLOW_HOST_HEADER_FALLBACK || "").trim();
-  if (fallback === "1" || fallback.toLowerCase() === "true") {
-    cfg.gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback = true;
-  } else {
-    const csv = (process.env.OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS || "http://localhost:18789,http://127.0.0.1:18789").trim();
-    const origins = csv.split(",").map((s) => s.trim()).filter(Boolean);
-    if (origins.length > 0) {
-      cfg.gateway.controlUi.allowedOrigins = origins;
-    }
-    if (cfg.gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback === true) {
-      delete cfg.gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback;
-    }
-  }
-}
-
-fs.writeFileSync(configFile, `${JSON.stringify(cfg, null, 2)}\n`);
-EOF
+node /app/prepare.js
 
 exec npx openclaw gateway run --port "${OPENCLAW_GATEWAY_PORT:-18789}" --bind "${OPENCLAW_GATEWAY_BIND:-lan}"

@@ -1,36 +1,42 @@
-# OpenClaw Container Bootstrap
+# OpenClaw + nginx trusted-proxy
 
-This container auto-runs first-time onboarding on startup when no config exists in `./files/state/openclaw.json`.
+This setup runs OpenClaw behind nginx with login at the proxy layer. OpenClaw is configured to use `gateway.auth.mode=trusted-proxy` only, so token auth is not used.
 
-Set provider/auth via environment variables before running:
+## Quick start
+
+1. Copy env template:
 
 ```bash
 cp .env.example .env
 ```
 
-Create image:
+1. Set at least:
+
+- `ANTHROPIC_API_KEY` (or your provider key)
+- `PROXY_BASIC_AUTH_USER`
+- `PROXY_BASIC_AUTH_PASS`
+- `OPENCLAW_TRUSTED_PROXY_ALLOW_USERS` (must include your proxy username)
+
+1. Build and start:
 
 ```bash
 docker compose up --build
 ```
 
-First startup tries:
+This builds both images:
 
-```bash
-npx openclaw onboard --non-interactive --accept-risk --mode local --flow quickstart --install-daemon --daemon-runtime node --skip-skills
-```
+- `openclaw` (Node runtime)
+- `nginx` (with `openssl` for startup htpasswd generation)
 
-If daemon install is unsupported in container runtime, startup falls back to non-daemon onboarding and still starts the gateway process.
+1. Open `http://localhost:18789` and sign in via nginx basic auth.
 
-For browser access from host, keep `OPENCLAW_GATEWAY_BIND=lan` in `.env` (container default). `loopback` only listens inside the container.
+## Notes
 
-When bind is non-loopback, Control UI origin checks are enforced. Defaults in `.env`:
-
-- `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS=http://localhost:18789,http://127.0.0.1:18789`
-- `OPENCLAW_CONTROL_UI_ALLOW_HOST_HEADER_FALLBACK=0`
-
-Gateway auth token:
-
-- Set `OPENCLAW_GATEWAY_TOKEN` in `.env` to use a fixed token.
-- If left empty, onboarding-generated token from `./files/state/openclaw.json` is used.
-- In Control UI, paste the token in Gateway Access on first connect.
+- OpenClaw onboarding is still automatic on first run.
+- OpenClaw is not exposed directly to host; nginx is the only published entrypoint.
+- Trusted proxy list defaults to nginx static container IP `172.28.0.2`.
+- Access is granted only through successful nginx login + trusted-proxy checks.
+- Browser relay is disabled by default (`OPENCLAW_BROWSER_ENABLED=0`) to avoid token-only chrome relay startup paths.
+- Control UI origins remain restricted by:
+  - `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS`
+  - `OPENCLAW_CONTROL_UI_ALLOW_HOST_HEADER_FALLBACK`
