@@ -35,7 +35,7 @@ const readEnvs = () => {
 const { proxies, allowUsers, allowedOrigins } = readEnvs();
 const configFile = "/app/files/state/openclaw.json";
 
-if (!fs.existsSync()) {
+if (!fs.existsSync(configFile)) {
   process.exit(0);
 }
 

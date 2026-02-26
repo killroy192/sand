@@ -17,22 +17,24 @@ if [ ! -f "${CONFIG_FILE}" ]; then
     exit 1
   fi
 
-  ONBOARD_BASE_ARGS="--non-interactive --accept-risk --mode local --flow quickstart --gateway-port 18789 --gateway-bind lan --skip-skills --auth-choice ${OPENCLAW_AUTH_CHOICE}"
-  ONBOARD_DAEMON_ARGS="${ONBOARD_BASE_ARGS} --install-daemon --daemon-runtime node"
+  ONBOARD_ARGS="--non-interactive --accept-risk --mode local --flow quickstart --gateway-port 18789 --gateway-bind lan --skip-skills --auth-choice ${OPENCLAW_AUTH_CHOICE}"
+  # In containers there is no systemd/daemon; skip --install-daemon to avoid a spurious failure.
+  if [ -f /.dockerenv ] || [ -f /run/.containerenv ]; then
+    : # already set for non-daemon
+  else
+    ONBOARD_ARGS="${ONBOARD_ARGS} --install-daemon --daemon-runtime node"
+  fi
 
-  echo "Running initial OpenClaw onboarding with daemon install..."
-  if ! sh -lc "npx openclaw onboard ${ONBOARD_DAEMON_ARGS}"; then
-    echo "Daemon install step failed in container environment; continuing with non-daemon onboarding."
-    if ! sh -lc "npx openclaw onboard ${ONBOARD_BASE_ARGS}"; then
-      if [ -f "${CONFIG_FILE}" ]; then
-        echo "Onboarding returned non-zero, but config exists at ${CONFIG_FILE}; continuing startup."
-      else
-        echo "Onboarding failed and config was not created."
-        exit 1
-      fi
+  echo "Running initial OpenClaw onboarding..."
+  if ! sh -lc "npx openclaw onboard ${ONBOARD_ARGS}"; then
+    if [ -f "${CONFIG_FILE}" ]; then
+      echo "Onboarding returned non-zero, but config exists at ${CONFIG_FILE}; continuing startup."
+    else
+      echo "Onboarding failed and config was not created."
+      exit 1
     fi
   fi
-  echo "Running prepare.js..."
+  echo "Running prepare.js to update config..."
   node /app/prepare.js
   echo "prepare.js completed."
 fi
