@@ -5,7 +5,6 @@ const ENV_SEPARATOR = ",";
 
 const readEnvs = () => {
   const envs = {
-    configFile: process.env.OPENCLAW_CONFIG_PATH,
     bind: process.env.OPENCLAW_GATEWAY_BIND,
     proxies: trim(process.env.OPENCLAW_TRUSTED_PROXY_IPS)
       .split(ENV_SEPARATOR)
@@ -35,16 +34,12 @@ const readEnvs = () => {
   return envs;
 };
 
-const {
-  configFile,
-  bind,
-  proxies,
-  allowUsers,
-  allowedOrigins,
-  browserEnabled,
-} = readEnvs();
+const { bind, proxies, allowUsers, allowedOrigins, browserEnabled } =
+  readEnvs();
+const configFile = "/app/files/state/openclaw.json";
+const telegramToken = trim(process.env.TELEGRAM_BOT_TOKEN || "");
 
-if (!fs.existsSync(configFile)) {
+if (!fs.existsSync()) {
   process.exit(0);
 }
 
@@ -73,6 +68,17 @@ cfg.browser.enabled =
   browserEnabled === "1" || browserEnabled.toLowerCase() === "true";
 if (!cfg.browser.enabled && cfg.browser.defaultProfile) {
   delete cfg.browser.defaultProfile;
+}
+
+// Telegram channel (optional; only if TELEGRAM_BOT_TOKEN is set)
+if (telegramToken) {
+  cfg.channels = cfg.channels || {};
+  cfg.channels.telegram = cfg.channels.telegram || {};
+  cfg.channels.telegram.enabled = true;
+  cfg.channels.telegram.botToken = "env:TELEGRAM_BOT_TOKEN";
+  if (!cfg.channels.telegram.dmPolicy) {
+    cfg.channels.telegram.dmPolicy = "pairing";
+  }
 }
 
 if (bind !== "loopback") {
