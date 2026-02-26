@@ -10,11 +10,6 @@ services:
     env_file:
       - openclaw.env
     environment:
-      OPENCLAW_BOOTSTRAP: "1"
-      OPENCLAW_ACCEPT_RISK: "1"
-      OPENCLAW_GATEWAY_PORT: "18789"
-      OPENCLAW_GATEWAY_BIND: "lan"
-      OPENCLAW_BROWSER_ENABLED: "0"
       OPENCLAW_TRUSTED_PROXY_IPS: "172.28.0.2"
     volumes:
       - ./files:/app/files
