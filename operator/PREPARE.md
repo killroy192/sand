@@ -42,7 +42,5 @@ This builds both images:
 - Static deployment defaults are pinned in `docker-compose.yml` (bootstrap, gateway bind/port, browser disabled, trusted proxy header/source).
 - Trusted proxy list defaults to nginx static container IP `172.28.0.2`.
 - Access is granted only through successful nginx login + trusted-proxy checks.
-- Browser relay is disabled by default (`OPENCLAW_BROWSER_ENABLED=0`) to avoid token-only chrome relay startup paths.
-- Control UI origins remain restricted by:
-  - `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS`
-  - `OPENCLAW_CONTROL_UI_ALLOW_HOST_HEADER_FALLBACK`
+- Browser relay is disabled by default to avoid token-only chrome relay startup paths.
+- Control UI origins remain restricted by `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS`
