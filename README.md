@@ -11,7 +11,7 @@ cp openclaw.env.example openclaw.env
 cp nginx.env.example nginx.env
 ```
 
-1. Set at least:
+2. Set at least:
 
 - In `openclaw.env`:
   - `ANTHROPIC_API_KEY` (or your provider key)
@@ -21,7 +21,7 @@ cp nginx.env.example nginx.env
   - `PROXY_BASIC_AUTH_USER`
   - `PROXY_BASIC_AUTH_PASS`
 
-1. Build and start:
+3. Build and start:
 
 ```bash
 docker compose up --build
@@ -32,7 +32,12 @@ This builds both images:
 - `openclaw` (Node runtime)
 - `nginx` (with `openssl` for startup htpasswd generation)
 
-1. Open `http://localhost:18789` and sign in via nginx basic auth.
+4. Open `http://localhost:18789` and sign in via nginx basic auth.
+
+## Extend
+
+Files folder contains configuration and state files.
+For instance, global openclaw config located in `files/state/openclaw.json`
 
 ## Notes
 
