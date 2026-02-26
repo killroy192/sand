@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dzmitry Lahunouski",
-  "license": "SEE LICENSE IN ROOT FOLDER",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "openclaw": "^2026.2.25"
   }
