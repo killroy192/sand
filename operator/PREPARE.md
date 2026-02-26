@@ -4,18 +4,22 @@ This setup runs OpenClaw behind nginx with login at the proxy layer. OpenClaw is
 
 ## Quick start
 
-1. Copy env template:
+1. Copy env templates:
 
 ```bash
-cp .env.example .env
+cp openclaw.env.example openclaw.env
+cp nginx.env.example nginx.env
 ```
 
 1. Set at least:
 
-- `ANTHROPIC_API_KEY` (or your provider key)
-- `PROXY_BASIC_AUTH_USER`
-- `PROXY_BASIC_AUTH_PASS`
-- `OPENCLAW_TRUSTED_PROXY_ALLOW_USERS` (must include your proxy username)
+- In `openclaw.env`:
+  - `ANTHROPIC_API_KEY` (or your provider key)
+  - `OPENCLAW_AUTH_CHOICE` (provider auth flow used during bootstrap)
+  - `OPENCLAW_TRUSTED_PROXY_ALLOW_USERS` (must include your proxy username)
+- In `nginx.env`:
+  - `PROXY_BASIC_AUTH_USER`
+  - `PROXY_BASIC_AUTH_PASS`
 
 1. Build and start:
 
@@ -34,6 +38,8 @@ This builds both images:
 
 - OpenClaw onboarding is still automatic on first run.
 - OpenClaw is not exposed directly to host; nginx is the only published entrypoint.
+- OpenClaw and nginx use separate env files. OpenClaw container does not receive nginx auth secrets.
+- Static deployment defaults are pinned in `docker-compose.yml` (bootstrap, gateway bind/port, browser disabled, trusted proxy header/source).
 - Trusted proxy list defaults to nginx static container IP `172.28.0.2`.
 - Access is granted only through successful nginx login + trusted-proxy checks.
 - Browser relay is disabled by default (`OPENCLAW_BROWSER_ENABLED=0`) to avoid token-only chrome relay startup paths.
