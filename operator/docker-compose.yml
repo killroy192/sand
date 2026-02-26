@@ -1,0 +1,15 @@
+services:
+  openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openclaw-operator
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    ports:
+      - "18789:18789"
+    env_file:
+      - .env
+    volumes:
+      - ./files:/app/files
