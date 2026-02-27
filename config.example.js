@@ -89,4 +89,11 @@ setup((envs) => ({
       streaming: "off",
     },
   },
+  skills: {
+    entries: {
+      notion: {
+        enabled: true,
+      },
+    },
+  },
 }));

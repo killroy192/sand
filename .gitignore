@@ -2,6 +2,6 @@
 !*.env.example
 */**/node_modules
 .vscode
-files/**
+**/*/files/**
 node_modules
 config.js
