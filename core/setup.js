@@ -74,6 +74,9 @@ export default function setup(configFunction) {
   cfg.gateway.controlUi = cfg.gateway.controlUi || {};
   cfg.gateway.controlUi.allowedOrigins = allowedOrigins;
   delete cfg.gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback;
+  if (process.env.OPENCLAW_UI_BASE_PATH) {
+    cfg.gateway.controlUi.basePath = process.env.OPENCLAW_UI_BASE_PATH.replace(/\/$/, "");
+  }
 
   fs.writeFileSync(configFile, `${JSON.stringify(cfg, null, 2)}\n`);
 }

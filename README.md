@@ -1,54 +1,76 @@
-# OpenClaw + nginx trusted-proxy
+# OpenClaw multi-worker behind nginx
 
-This setup runs OpenClaw behind nginx with login at the proxy layer. OpenClaw is configured to use `gateway.auth.mode=trusted-proxy` only, so token auth is not used.
+Run multiple OpenClaw gateways (workers) in separate containers behind one nginx. Each worker has its own port, config, and state. Login is at the proxy (HTTP Basic Auth); OpenClaw uses trusted-proxy auth.
 
-## Quick start
+## Setup
 
-1. Copy env templates:
+### 1. Env files
+
+**Nginx (shared):**
 
 ```bash
-cp openclaw.env.example openclaw.env
 cp nginx.env.example nginx.env
-cp config.template.js config.js
+# Edit nginx.env: set PROXY_BASIC_AUTH_USER and PROXY_BASIC_AUTH_PASS
 ```
 
-2. Set at least:
+**Per worker:**
 
-- In `openclaw.env`:
-  - `ANTHROPIC_API_KEY` (or your provider key)
-  - `OPENCLAW_AUTH_CHOICE` (provider auth flow used during bootstrap)
-  - `OPENCLAW_TRUSTED_PROXY_ALLOW_USERS` (must include your proxy username)
-- In `nginx.env`:
-  - `PROXY_BASIC_AUTH_USER`
-  - `PROXY_BASIC_AUTH_PASS`
+```bash
+cp agents/worker_0/.env.example agents/worker_0/.env
+cp agents/worker_0/.env.example agents/worker_1/.env
+```
 
-3. Optional. Update `config.js`. Check `config.example.js`.
+Edit each `.env`:
 
-4. Build and start:
+- **Required:** `ANTHROPIC_API_KEY` (or your provider), `OPENCLAW_AUTH_CHOICE`, `OPENCLAW_TRUSTED_PROXY_ALLOW_USERS` (must include the nginx username, e.g. `admin`).
+- **worker_0:** `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS` should include `http://localhost:18789`, `http://127.0.0.1:18789`.
+- **worker_1:** add `http://localhost:18790`, `http://127.0.0.1:18790` to `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS`.
+
+### 2. Worker config (optional)
+
+Each worker has its own `config.js` (and optional `config.example.js`). The image uses `core/setup.js` to merge env-driven settings (trusted-proxy, allowed origins, etc.) into OpenClaw’s config on every start. Customize per worker:
+
+- `agents/worker_0/config.js`
+- `agents/worker_1/config.js`
+
+### 3. Build and run
 
 ```bash
 docker compose up --build
 ```
 
-This builds both images:
+First run: each worker runs onboarding (creates `agents/<name>/files/.openclaw/openclaw.json`), then `config.js` applies proxy/origin settings.
 
-- `openclaw` (Node runtime)
-- `nginx` (with `openssl` for startup htpasswd generation)
+## Access
 
-5. Open `http://localhost:18789/chat` and sign in via nginx basic auth.
+| Port   | Worker   | URL                     |
+|--------|----------|-------------------------|
+| 18789  | worker_0 | http://localhost:18789  |
+| 18790  | worker_1 | http://localhost:18790  |
 
-## Extend
+Sign in with `PROXY_BASIC_AUTH_USER` / `PROXY_BASIC_AUTH_PASS` from `nginx.env`. On first connect the Control UI may ask for device pairing; approve from the host:
 
-Files folder contains configuration and state files.
-For instance, global openclaw config located in `files/state/openclaw.json`
+```bash
+docker compose exec operator-worker_0 npx openclaw devices list
+docker compose exec operator-worker_0 npx openclaw devices approve <requestId>
+```
+
+(Use `operator-worker_1` for worker_1.)
+
+## Layout
+
+- **nginx** – One container; listens on 80 (→ worker_0) and 81 (→ worker_1), published as 18789 and 18790. Resolves worker hostnames at request time so it can start before workers.
+- **worker_0 / worker_1** – OpenClaw gateway per container; `OPENCLAW_PROXY_HOST=nginx` so trusted-proxy IP is resolved at startup. State and config live under `agents/<name>/files/`.
+
+## Adding another worker
+
+1. Add a `worker_2` service in `docker-compose.yml` (same pattern as worker_1: env from `agents/worker_2/.env`, volumes for `agents/worker_2/files` and `agents/worker_2/config.js`, `OPENCLAW_PROXY_HOST=nginx`, `OPENCLAW_DISABLE_BONJOUR=1`).
+2. In `nginx/nginx.conf`, add a `server { listen 82; ... }` block proxying to `worker_2:18789`, and in `docker-compose.yml` add `"18791:82"` under nginx `ports`.
+3. Create `agents/worker_2/.env` (from worker_0’s example) and `agents/worker_2/config.js`, and include `http://localhost:18791` in that worker’s `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS`.
 
 ## Notes
 
-- OpenClaw onboarding is still automatic on first run.
-- OpenClaw is not exposed directly to host; nginx is the only published entrypoint.
-- OpenClaw and nginx use separate env files. OpenClaw container does not receive nginx auth secrets.
-- Static deployment defaults are pinned in `docker-compose.yml` (bootstrap, gateway bind/port, browser disabled, trusted proxy header/source).
-- Trusted proxy list defaults to nginx static container IP `172.28.0.2`.
-- Access is granted only through successful nginx login + trusted-proxy checks.
-- Browser relay is disabled by default to avoid token-only chrome relay startup paths.
-- Control UI origins remain restricted by `OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS`
+- Onboarding runs automatically when a worker’s config file is missing.
+- Only nginx is exposed to the host; workers are not.
+- Trusted-proxy: nginx forwards `X-Forwarded-User`; OpenClaw allows only users in `OPENCLAW_TRUSTED_PROXY_ALLOW_USERS` from the proxy IP.
+- Bonjour is disabled in workers (`OPENCLAW_DISABLE_BONJOUR=1`) to avoid name conflicts.

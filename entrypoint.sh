@@ -1,6 +1,14 @@
 #!/usr/bin/env sh
 set -eu
 
+# If proxy host is set (e.g. OPENCLAW_PROXY_HOST=nginx), resolve to IP for trusted-proxy auth.
+if [ -n "${OPENCLAW_PROXY_HOST:-}" ] && [ -z "${OPENCLAW_TRUSTED_PROXY_IPS:-}" ]; then
+  _ip=$(getent hosts "${OPENCLAW_PROXY_HOST}" 2>/dev/null | awk '{ print $1; exit }')
+  if [ -n "${_ip}" ]; then
+    export OPENCLAW_TRUSTED_PROXY_IPS="${_ip}"
+  fi
+fi
+
 mkdir -p "${OPENCLAW_HOME}"
 
 # OpenClaw writes its config under $OPENCLAW_HOME/.openclaw/openclaw.json
