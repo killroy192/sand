@@ -9,6 +9,7 @@ This setup runs OpenClaw behind nginx with login at the proxy layer. OpenClaw is
 ```bash
 cp openclaw.env.example openclaw.env
 cp nginx.env.example nginx.env
+cp config.template.js config.js
 ```
 
 2. Set at least:
@@ -21,7 +22,9 @@ cp nginx.env.example nginx.env
   - `PROXY_BASIC_AUTH_USER`
   - `PROXY_BASIC_AUTH_PASS`
 
-3. Build and start:
+3. Optional. Update `config.js`. Check `config.example.js`.
+
+4. Build and start:
 
 ```bash
 docker compose up --build
@@ -32,7 +35,7 @@ This builds both images:
 - `openclaw` (Node runtime)
 - `nginx` (with `openssl` for startup htpasswd generation)
 
-4. Open `http://localhost:18789` and sign in via nginx basic auth.
+5. Open `http://localhost:18789/chat` and sign in via nginx basic auth.
 
 ## Extend
 
