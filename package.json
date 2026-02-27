@@ -9,6 +9,7 @@
   "author": "Dzmitry Lahunouski",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
+    "lodash.merge": "^4.6.2",
     "openclaw": "^2026.2.25"
   }
 }

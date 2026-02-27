@@ -1,14 +1,9 @@
 #!/usr/bin/env sh
 set -eu
 
-mkdir -p \
-  /app/files/home \
-  /app/files/state \
-  /app/files/cache \
-  /app/files/config \
-  /app/files/data
+mkdir -p "${OPENCLAW_HOME}"
 
-CONFIG_FILE="${OPENCLAW_CONFIG_PATH:-/app/files/state/openclaw.json}"
+CONFIG_FILE="${OPENCLAW_HOME}/openclaw.json"
 
 if [ ! -f "${CONFIG_FILE}" ]; then
   if [ -z "${OPENCLAW_AUTH_CHOICE:-}" ]; then
@@ -34,9 +29,9 @@ if [ ! -f "${CONFIG_FILE}" ]; then
       exit 1
     fi
   fi
-  echo "Running prepare.js to update config..."
-  node /app/prepare.js
-  echo "prepare.js completed."
+  echo "Updating config..."
+  node /app/config.js
+  echo "Config updated."
 fi
 
 exec npx openclaw gateway run --port 18789 --bind lan
