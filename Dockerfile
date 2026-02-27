@@ -12,6 +12,6 @@ RUN chmod +x /app/entrypoint.sh
 
 # Route OpenClaw and Node runtime files into /app/files.
 ENV HOME=/app/files \
-    OPENCLAW_HOME=/app/files/openclaw
+    OPENCLAW_HOME=/app/files
 
 ENTRYPOINT ["/app/entrypoint.sh"]

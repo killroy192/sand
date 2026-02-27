@@ -3,7 +3,8 @@ set -eu
 
 mkdir -p "${OPENCLAW_HOME}"
 
-CONFIG_FILE="${OPENCLAW_HOME}/openclaw.json"
+# OpenClaw writes its config under $OPENCLAW_HOME/.openclaw/openclaw.json
+CONFIG_FILE="${OPENCLAW_HOME}/.openclaw/openclaw.json"
 
 if [ ! -f "${CONFIG_FILE}" ]; then
   if [ -z "${OPENCLAW_AUTH_CHOICE:-}" ]; then

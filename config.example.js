@@ -9,12 +9,12 @@ setup((envs) => ({
       {
         id: "alex",
         name: "alex",
-        workspace: `${envs.openclawHome}/workspace-alex`,
+        workspace: `${envs.openclawConfigDir}/workspace-alex`,
       },
       {
         id: "mia",
         name: "mia",
-        workspace: `${envs.openclawHome}/workspace-mia`,
+        workspace: `${envs.openclawConfigDir}/workspace-mia`,
       },
     ],
   },

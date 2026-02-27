@@ -18,8 +18,9 @@ const readEnvs = () => {
       .split(ENV_SEPARATOR)
       .map(trim)
       .filter(Boolean),
-    configFile: `${process.env.OPENCLAW_HOME}/openclaw.json`,
-    openclawHome: process.env.OPENCLAW_HOME,
+    // OpenClaw stores config under $OPENCLAW_HOME/.openclaw/openclaw.json
+    configFile: `${process.env.OPENCLAW_HOME}/.openclaw/openclaw.json`,
+    openclawConfigDir: `${process.env.OPENCLAW_HOME}/.openclaw`,
   };
 
   Object.entries(envs).forEach(([key, value]) => {
