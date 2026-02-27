@@ -17,7 +17,7 @@ cp nginx.env.example nginx.env
 
 ```bash
 cp agents/worker_0/.env.example agents/worker_0/.env
-cp agents/worker_0/.env.example agents/worker_1/.env
+cp agents/worker_1/.env.example agents/worker_1/.env
 ```
 
 Edit each `.env`:
